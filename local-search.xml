@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  
+  
+  
+  <entry>
+    <title>DOM Render</title>
+    <link href="/2020/05/09/dom-render/"/>
+    <url>/2020/05/09/dom-render/</url>
+    
+    <content type="html"><![CDATA[<div class="note note-secondary">            <p>一道老生常谈的问题：从输入URL到页面展示，经历了哪些过程……</p><p>这里并不全部讨论，来关注一下最后一个过程：浏览器的渲染过程。</p>          </div><p>根据 <a href="https://developers.google.com/web/fundamentals/performance/critical-rendering-path/render-tree-construction" target="_blank" rel="noopener">Google Web</a> ，大致可以分为以下五个阶段：</p><ul><li>根据 <code>HTML</code> 生成 <code>DOM Tree</code> (此时并不渲染到页面上)</li><li>根据 <code>CSS</code> 生成对应的 <code>CSSOM Tree</code> (与 <code>DOM Tree</code>上的结点一一对应)</li><li><code>DOM Tree</code> 和 <code>CSSOM Tree</code> 合成生成 <code>Render Tree</code> (不包括 <code>head</code>, <code>meta</code> 等不可见的结点)</li><li><code>Layout</code> 布局渲染</li><li><code>Paint</code> 绘制渲染</li></ul><hr><h2 id="DOM-Tree"><a href="#DOM-Tree" class="headerlink" title="DOM Tree"></a>DOM Tree</h2><p><code>DOM</code>，全称 <code>Document Object Model</code>，是一种对象模型，转化成树的过程为：<code>Bytes → Characters → Tokens → Nodes → DOM</code>.(具体可以跳👉<a href="https://developers.google.com/web/fundamentals/performance/critical-rendering-path/constructing-the-object-model" target="_blank" rel="noopener">constructing-the-object-model</a> )</p><h2 id="CSSOM-Tree"><a href="#CSSOM-Tree" class="headerlink" title="CSSOM Tree"></a>CSSOM Tree</h2><p>同样也是树的结构，同时生成的过程也是对浏览器默认样式的逐步替换。</p><h2 id="Render-Tree"><a href="#Render-Tree" class="headerlink" title="Render Tree"></a>Render Tree</h2><p><code>DOM Tree</code> 和 <code>CSSOM Tree</code> 合并生成 <code>Render Tree</code> (渲染树)</p><p><img src="/img/dom-render/render-tree-construction.png" srcset="/img/loading.gif" alt=""></p><p><code>DOM Tree</code> 从根节点开始遍历每个可见结点(DFS/BFS?)并合并对应 <code>CSSOM</code> 结点中的样式信息。这里的“可见”是指，如果在合并过程中，某个 <code>DOM</code> 结点对应的 <code>CSSOM</code> 结点被设置了 <code>display: none</code> 之类的属性，便会跳过该结点的合并；但 <code>opacity: 0</code>, <code>visible: hidden</code> 这种仍然会占据空间，因此依旧会被合并。(PS：这里就会牵涉到性能问题)</p><h2 id="Layout"><a href="#Layout" class="headerlink" title="Layout"></a>Layout</h2><p>根据样式信息计算各个结点在设备视区的确切位置以及大小，即 <code>布局</code>.</p><h2 id="Paint"><a href="#Paint" class="headerlink" title="Paint"></a>Paint</h2><p>将各个结点渲染到屏幕的过程。</p><p><img src="/img/dom-render/render-progress.jpg" srcset="/img/loading.gif" alt=""></p><hr><p>我们常说的：尽量避免去操作 <code>DOM</code>，因为成本很高。这里的成本即指时间耗费，也指资源耗费。如果使用 <code>JS</code> 去操作 <code>DOM</code> 和 <code>CSS</code> 时，<code>DOM Tree</code> 和 <code>CSSOM Tree</code> 的内容就会发生变更，从而导致整个渲染过程重复执行，而其中影响最大的就是重新执行 <code>Layout</code> 过程时触发的 <code>reflow(回流)</code> 以及重新执行 <code>Paint</code> 时触发的 <code>repaint(重绘)</code>.</p><h2 id="reflow"><a href="#reflow" class="headerlink" title="reflow"></a>reflow</h2><p>当发生以下情形时会触发 <code>reflow</code> 回流：</p><ul><li>初始渲染时</li><li><code>DOM Tree</code> 结构发生变化时</li><li><code>Render Tree</code> 结构发生变化时</li><li>浏览器 <code>resize</code> 时</li></ul><p>从上面的过程来看，<code>Layout</code> 在 <code>Paint</code> 之前，因此每次触发 <code>reflow</code> 都会导致整个页面的重新渲染。</p><h2 id="repaint"><a href="#repaint" class="headerlink" title="repaint"></a>repaint</h2><p>当发生以下情形时会触发 <code>repaint</code> 重绘：</p><ul><li>触发 <code>reflow</code> 时</li><li>结点的 <code>background-color</code>, <code>color</code>等不影响其周围和内部布局的属性改变时</li></ul><p>应注意 <code>repaint</code> 可以单独触发，且只会影响到属性改变的结点，不会影响到其他结点。</p><div class="note note-info">            <p>从上面的描述很容易发现， <code>reflow</code> 的成本远高于 <code>repaint</code>，从性能优化上看，应该尽量减少 <code>reflow</code> 次数，例如</p><ul><li>先将需要多次修改的 <code>DOM</code> 设置为 <code>display: none</code>，待操作完毕后再显示。(修改不在 <code>Render Tree</code> 上的结点并不会触发 <code>reflow</code> 和 <code>repaint</code> )</li><li>使结点脱离文档流</li></ul>          </div><h2 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h2><p><code>display: none</code>, <code>visible: hidden</code>, <code>opacity: 0</code>的优劣、区别</p>]]></content>
+    
+    
+    
+    <tags>
+      
+      <tag>DOM</tag>
+      
+      <tag>brower</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>Vue深入</title>
+    <link href="/2019/08/17/Vue-Explore/"/>
+    <url>/2019/08/17/Vue-Explore/</url>
+    
+    <content type="html"><![CDATA[<h2 id="2019-08-17记录"><a href="#2019-08-17记录" class="headerlink" title="2019-08-17记录"></a>2019-08-17记录</h2><h4 id="watch属性深入"><a href="#watch属性深入" class="headerlink" title="watch属性深入"></a>watch属性深入</h4><p>先放一段代码</p><div class="hljs"><pre><code class="hljs javascript">data: <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> (&#123;    obj: &#123;        name: <span class="hljs-string">'cucu6'</span>,        age: <span class="hljs-number">9999</span>    &#125;,    example: <span class="hljs-string">''</span>&#125;)watch: &#123;    obj: &#123;        handler: <span class="hljs-string">'handleObj'</span>,        immediate: <span class="hljs-literal">true</span>, <span class="hljs-comment">// false</span>        deep: <span class="hljs-literal">true</span> <span class="hljs-comment">// false</span>    &#125;&#125;methods: &#123;    handleObj() &#123;        <span class="hljs-comment">/* Do Something... */</span>    &#125;&#125;</code></pre></div><p>上面可以看到，watch属性中不像官网基础教程中给出的那样，只写了一个回调函数，而是有多个键值对，起不同作用。</p><ul><li><p><code>handler</code></p><p><code>handler</code>属性中存放回调函数，一旦侦听的值<code>obj</code>发生改变（被直接赋值），就会触发回调函数；</p><p>需要注意的是，<code>handler</code>的值可以是一个函数（<code>function(newVal, oldVal)</code>)，也可以是写在<code>methods</code>中的方法名，但写成函数形式时应避免使用箭头函数，因为箭头函数绑定了父级作用域的上下文，逻辑上的<code>this</code>指针并不会像往常一样指向整个<code>Vue</code>实例，因此如果在函数里使用<code>this</code>指针时会导致出错，如在回调函数中写<code>this.example = &#39;whatever&#39;</code>，这样是不可用的；</p><p>此外，看官网中的<code>handler</code>也支持函数的数组，但没有尝试过，以后有时间看看。</p></li><li><p><code>immediate</code></p><p><code>immediate</code>属性的值默认为<code>false</code>，当值为<code>true</code>时，在数据被绑定后会立即执行一次回调函数，即在组件渲染后会执行一次<code>handler</code>中的函数，这个应该没什么好讲的。</p></li><li><p><code>deep</code></p><p><code>deep</code>属性据官网介绍：<em>回调会在任何被侦听的对象的 property 改变时被调用，不论其被嵌套多深</em></p><p>从表面上看，当我们改变<code>obj.name</code>的值时，<code>handler</code>的回调函数会被执行，其实不然，<code>watch</code>属性侦听对象是监听其引用的变化，也就是说，如果我们不对其进行直接赋值，<code>handler</code>是不会执行的；</p><p>当<code>deep</code>的值为<code>true</code>时，如官网上所描述的，监听器会一层层往下遍历，当某一键值对改变时就会触发回调；</p><p>当然，对每个属性进行监听的性能开销也会增大，此时可以使用<code>string</code>的形式进行侦听。</p><div class="hljs"><pre><code class="hljs javascript">watch: &#123;<span class="hljs-string">'obj.name'</span>: &#123;handler: <span class="hljs-string">'handleObj'</span>,<span class="hljs-comment">/* ... */</span>&#125;&#125;</code></pre></div><p>这样当<code>obj.name</code>发生改变时就会触发回调。</p></li><li><p><code>watch</code>侦听器的注销</p><p>一般<code>watch</code>属性直接写在组件中，会随着组件的销毁而销毁侦听器；而根据 Google，有这样一个方法可以实现监听和销毁；</p><div class="hljs"><pre><code class="hljs javascript"><span class="hljs-keyword">const</span> watchDestructer = app.$watch(watchAttribute: string, <span class="hljs-attr">callback</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">newVal, oldVal</span>));</span><span class="hljs-function"><span class="hljs-title">watchDestructer</span>(<span class="hljs-params"></span>); // 销毁<span class="hljs-title">watch</span></span></code></pre></div><p><code>app.$watch</code>的返回值是对应属性的注销方法，执行后就能注销侦听。</p></li></ul><hr>]]></content>
+    
+    
+    <categories>
+      
+      <category>Vue</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>Vue</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>环境配置记录</title>
+    <link href="/2019/08/11/environment-config/"/>
+    <url>/2019/08/11/environment-config/</url>
+    
+    <content type="html"><![CDATA[<h2 id="2019-8-11-更新"><a href="#2019-8-11-更新" class="headerlink" title="2019-8-11 更新"></a>2019-8-11 更新</h2><h4 id="Git配置"><a href="#Git配置" class="headerlink" title="Git配置"></a>Git配置</h4><h6 id="用户信息"><a href="#用户信息" class="headerlink" title="用户信息"></a>用户信息</h6><div class="hljs"><pre><code class="hljs bash"><span class="hljs-comment"># 配置用户名和邮箱</span>$ git config --global user.name <span class="hljs-string">"test"</span>$ git config --global user.email <span class="hljs-string">"test@test.com"</span></code></pre></div><h6 id="SSH"><a href="#SSH" class="headerlink" title="SSH"></a>SSH</h6><p><em>此配置在  C:\Users\User\ 下进行</em></p><div class="hljs"><pre><code class="hljs bash"><span class="hljs-comment">## 生成ssh</span>$ ssh-keygen -t rsa -C <span class="hljs-string">"test@test.com"</span><span class="hljs-comment"># 不断回车后得到 id_rsa 和 id_rsa.pub</span><span class="hljs-comment"># 添加SSH到ssh-agent</span>$ <span class="hljs-built_in">eval</span> <span class="hljs-string">"<span class="hljs-variable">$(ssh-agent -s)</span>"</span>$ ssh-add ~/.ssh/id_rsa</code></pre></div><p>进入 <em>C:\Users\User\ .ssh</em> ，复制 <em>id_rsa.pub</em> 的内容后，登录 Github</p><p><img src="https://i.loli.net/2019/08/12/ciaStEl1efT3kHb.png" srcset="/img/loading.gif" alt=""></p><p><img src="https://i.loli.net/2019/08/12/5elwc2VOfDI6naH.png" srcset="/img/loading.gif" alt=""></p><p><img src="https://i.loli.net/2019/08/12/bRDJWBgEtaoY3dp.png" srcset="/img/loading.gif" alt=""></p><p><img src="https://i.loli.net/2019/08/12/SDMhdboigqw9458.png" srcset="/img/loading.gif" alt=""></p><p>完成后测试：</p><div class="hljs"><pre><code class="hljs bash">$ ssh -T git@github.com<span class="hljs-comment"># 若出现 Are you sure you want to continue connecting (yes/no)? 输入 yes</span></code></pre></div><p><img src="https://i.loli.net/2019/08/12/EuiXwp6N738aBQ2.png" srcset="/img/loading.gif" alt=""></p><p>自此完成。</p><hr>]]></content>
+    
+    
+    <categories>
+      
+      <category>环境配置</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>环境配置</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  
+</search>
