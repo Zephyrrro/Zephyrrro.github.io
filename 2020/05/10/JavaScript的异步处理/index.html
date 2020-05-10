@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="Zephyrrro">
+  <meta name="keywords" content="">
+  <title>JavaScript中的异步 - Zephyrrro - Blog</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/atom-one-dark.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 100vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Zephyrrro - Blog</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/archives/">
+              <i class="iconfont icon-archive-fill"></i>
+              归档</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/">
+              <i class="iconfont icon-category-fill"></i>
+              分类</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/tags/">
+              <i class="iconfont icon-tags-fill"></i>
+              标签</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" false
+         style="background: url('/img/earth.jpg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2020-05-10 17:02">
+                    星期日, 五月 10日 2020, 5:02 下午
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    1.4k 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    17
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+            <div class="scroll-down-bar">
+              <i class="iconfont icon-arrowdown"></i>
+            </div>
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <p class="note note-info">
+    大概一年前就初步认识到JavaScript在单线程的运行机制下是怎么运行异步代码的，但只是懵懵懂懂，直到最近才大致清楚的了解了整个运行过程...
+</p>
+
+<h2 id="单线程的JavaScript"><a href="#单线程的JavaScript" class="headerlink" title="单线程的JavaScript"></a>单线程的JavaScript</h2><p>众所周知 <code>Javascript</code> 是单线程执行的，这就意味着代码只能自顶向下按顺序执行，一旦某行代码运行时间过长，就会导致后续代码运行阻塞。在 <code>JavaScript</code> 诞生的初期，<code>JavaScript</code> 只是用于简单的浏览器交互，并没有考虑到十分复杂的情况，因此即使当时是以单线程方式运行也是完全足够的，但在如今大前端时代下，各类技术横纵向发展迅速<del>(开花警告)</del>，没有异步运行机制显然无法使 <code>JavaScript</code> 胜任如此大的工作量.</p>
+<h2 id="执行栈"><a href="#执行栈" class="headerlink" title="执行栈"></a>执行栈</h2><p>单线程的 <code>JavaScript</code> 只维护一个执行栈。执行栈的运行机制大致如下：</p>
+<ul>
+<li><p>在脚本初次运行时会先在底部推入 <code>Global</code> ，即我们常说的 <code>Global Context(全局执行上下文)</code> ，这一 <code>context</code> 保存着全局变量对象，只有在整个程序运行完毕后才会从执行栈内弹出，此时程序运行结束.</p>
+</li>
+<li><p>当遇到函数时，会向执行栈中推入 <code>Function Context(函数执行上下文)</code>，并开始运行函数内的代码，函数内同样可以调用其他函数，这也同样是一个 <code>Function Context</code> 被推入的过程，直到函数 <code>return</code> 后，该<code>context</code> 弹出.</p>
+</li>
+<li><p>当遇到同步代码时，在代码的 <code>context</code> 下执行并<strong>等待</strong>直至执行完毕；</p>
+</li>
+<li><p>当遇到异步代码时，在代码的 <code>context</code> 下执行并将其<strong>挂起</strong>，同时继续执行后续代码，当异步事件执行完毕后，将其加入<strong>对应</strong>的<strong>事件队列</strong>；</p>
+</li>
+</ul>
+<p><img src="/img/eventloop/The_Javascript_Runtime_Environment_Example.svg" srcset="/img/loading.gif" alt=""></p>
+<h2 id="Eventloop"><a href="#Eventloop" class="headerlink" title="Eventloop"></a>Eventloop</h2><p>上述提到的<strong>事件队列</strong>，就是实现 <code>Event Loop</code> 的关键。执行栈在运行完当前栈内的<strong>全部任务</strong>后，会到<strong>事件队列</strong>中去查找是否存在任务等待执行，如果存在，就会按照队列<strong>先进先出</strong>的特点按顺序执行队列中的事件，执行过程同样遵循上述原则。如此反复，就形成了一个循环(<code>Event Loop</code>)</p>
+<p>可以注意到，事件队列被描述为<strong>对应的</strong>，这意味着不同事件有着自己的队列，队列执行之间自然就存在着优先级，而这些事件大致可以分为两类：宏任务(<code>macro task</code>)、微任务(<code>micro task</code>)；</p>
+<h3 id="宏任务"><a href="#宏任务" class="headerlink" title="宏任务"></a>宏任务</h3><table>
+<thead>
+<tr>
+<th>Task</th>
+<th align="center">Broswer</th>
+<th align="center">Node</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>I/O</code></td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+</tr>
+<tr>
+<td><code>setTimeOut</code></td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+</tr>
+<tr>
+<td><code>setInterval</code></td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+</tr>
+<tr>
+<td><code>setImmediate</code></td>
+<td align="center">❌</td>
+<td align="center">✅</td>
+</tr>
+<tr>
+<td><code>requestAnimationoFrame</code></td>
+<td align="center">✅</td>
+<td align="center">❌</td>
+</tr>
+</tbody></table>
+<h3 id="微任务"><a href="#微任务" class="headerlink" title="微任务"></a>微任务</h3><table>
+<thead>
+<tr>
+<th>Task</th>
+<th align="center">Broswer</th>
+<th align="center">Node</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>process.nextTick</code></td>
+<td align="center">❌</td>
+<td align="center">✅</td>
+</tr>
+<tr>
+<td><code>Promise</code></td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+</tr>
+<tr>
+<td><code>MutationObserver</code></td>
+<td align="center">✅</td>
+<td align="center">❌</td>
+</tr>
+</tbody></table>
+<h3 id="优先级"><a href="#优先级" class="headerlink" title="优先级"></a>优先级</h3><p><code>process.nextTick</code> &gt; <code>Promise</code> &gt; <code>setTimeout(fn)</code>、<code>setInterval(fn)</code> &gt; <code>setImmediate</code> &gt; <code>setTimeout(fn, time)</code>、<code>setInterval(fn, time)</code>.</p>
+<div class="note note-info">
+            <p><code>PS:</code>因为 <code>setTimeOut</code>、<code>setInterval</code> 在没有设置 <code>time</code> 参数时，会在主线程最近获得的空闲时间时运行，即尽可能早的运行，因此优先级大于设置 <code>time</code> 参数时</p>
+          </div>
+
+<h3 id="简单例子"><a href="#简单例子" class="headerlink" title="简单例子"></a>简单例子</h3><div class="hljs"><pre><code class="hljs javascript">setImmediate(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> &#123;
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-number">1</span>);
+&#125;, <span class="hljs-number">0</span>);
+
+setTimeout(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> &#123;
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-number">2</span>);
+&#125;, <span class="hljs-number">0</span>);
+
+<span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-params">resolve</span> =&gt;</span> &#123;
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-number">3</span>);
+  resolve();
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-number">4</span>);
+&#125;).then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> &#123;
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-number">5</span>);
+&#125;);
+
+<span class="hljs-built_in">console</span>.log(<span class="hljs-number">6</span>);
+
+process.nextTick(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> &#123;
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-number">7</span>);
+&#125;);
+
+<span class="hljs-built_in">console</span>.log(<span class="hljs-number">8</span>);</code></pre></div>
+
+<p>简单画图分析一下，函数开始运行时：</p>
+<p><img src="/img/eventloop/example1-step1.png" srcset="/img/loading.gif" alt=""></p>
+<p>自顶向下运行后，会依次打印出 <code>3 4 6 8</code>，且 <code>setTimeout</code>, <code>setImmediate</code>, <code>nextTick</code>, <code>Promise</code> 队列发生变化(注：<code>Promise</code> 的构造函数是同步过程)，如下图所示：</p>
+<p><img src="/img/eventloop/example1-step2.png" srcset="/img/loading.gif" alt=""></p>
+<p>此时栈清空，全部同步任务完成，检查<strong>事件队列</strong>中是否存在异步事件，并按照优先级和队列特点依次执行(先检查微任务，再检查宏任务)。因此又会依次打印 <code>7 5 2 1</code>.</p>
+<p>此例运行到这里已经结束了，但正常来说会执行完此轮异步任务后，会再检查一次，如果事件队列中存在异步任务(在此轮异步任务执行时被推入队列)，则会重复以上操作，直至事件队列中不再存在异步事件后才会继续执行.</p>
+<h2 id="async-await"><a href="#async-await" class="headerlink" title="async/await"></a>async/await</h2><p><code>async/await</code> 是 <code>Promise</code> 的语法糖，它使异步代码更易编写和阅读，因为使用了 <code>async/await</code> 后，代码读起来就像同步代码一般，十分容易理解。</p>
+<h3 id="async"><a href="#async" class="headerlink" title="async"></a>async</h3><p><code>async</code> 使函数返回一个 <code>Promise</code>，在调用函数时就能使用 <code>then</code> 链连接后续的操作</p>
+<div class="hljs"><pre><code class="hljs javascript"><span class="hljs-keyword">const</span> asyncFun = <span class="hljs-keyword">async</span> () =&gt; &#123;
+    <span class="hljs-keyword">return</span> <span class="hljs-string">'something'</span>;
+&#125;
+asyncFun().then(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(res))	<span class="hljs-comment">//	=&gt;	'something'</span></code></pre></div>
+
+<p>等价于：</p>
+<div class="hljs"><pre><code class="hljs javascript"><span class="hljs-built_in">Promise</span>.resolve(<span class="hljs-string">'something'</span>).then(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(res))	<span class="hljs-comment">//	=&gt;	'something'</span></code></pre></div>
+
+<h3 id="await"><a href="#await" class="headerlink" title="await"></a>await</h3><p><code>await</code> 关键字只能在 <code>async Function</code> 中使用。<code>async Function</code> 运行到有 <code>await</code> 标记的异步函数时，会暂停在此行代码上，直到该异步任务完成，才会执行后续代码，这就使得代码结构与同步代码一般。</p>
+<div class="hljs"><pre><code class="hljs javascript"><span class="hljs-keyword">const</span> promiseFunc = <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> &#123;
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-params">resolve</span> =&gt;</span> &#123;
+        setTimeout(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> &#123;
+            resolve(<span class="hljs-string">'after 2s'</span>)
+        &#125;, <span class="hljs-number">2</span> * <span class="hljs-number">1000</span>)
+    &#125;)
+&#125;
+<span class="hljs-keyword">const</span> asyncFunc = <span class="hljs-keyword">async</span> () =&gt; &#123;
+    <span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> promiseFunc();
+    <span class="hljs-built_in">console</span>.log(res);
+&#125;
+asyncFunc()	<span class="hljs-comment">//	2s后输出 after 2s</span></code></pre></div>
+
+<h3 id="使用async-await的Eventloop"><a href="#使用async-await的Eventloop" class="headerlink" title="使用async/await的Eventloop"></a>使用async/await的Eventloop</h3><div class="hljs"><pre><code class="hljs javascript"><span class="hljs-keyword">const</span> async1 = <span class="hljs-keyword">async</span> () =&gt; &#123;
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"async1 start"</span>);
+  <span class="hljs-keyword">await</span> async2();
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"async1 end"</span>);
+&#125;
+
+<span class="hljs-keyword">const</span> async2 = <span class="hljs-keyword">async</span> () =&gt; &#123;
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"async2"</span>);
+&#125;
+
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">"script start"</span>);
+
+setTimeout(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> &#123;
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"setTimeout"</span>);
+&#125;, <span class="hljs-number">0</span>);
+
+async1();
+
+<span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-params">resolve</span> =&gt;</span> &#123;
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"promise1"</span>);
+  resolve();
+&#125;).then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> &#123;
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"promise2"</span>);
+&#125;);
+
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">"script end"</span>);
+
+<span class="hljs-comment">/** </span>
+<span class="hljs-comment"> * script start</span>
+<span class="hljs-comment"> * async1 start</span>
+<span class="hljs-comment"> * async2</span>
+<span class="hljs-comment"> * promise1</span>
+<span class="hljs-comment"> * script end</span>
+<span class="hljs-comment"> * promise2</span>
+<span class="hljs-comment"> * async1 end</span>
+<span class="hljs-comment"> * setTimeout</span>
+<span class="hljs-comment">*/</span></code></pre></div>
+
+<p>其中，<code>async1</code> 等价于</p>
+<div class="hljs"><pre><code class="hljs javascript"><span class="hljs-keyword">const</span> async1 = <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> &#123;
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-params">resolve</span> =&gt;</span> &#123;
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"async1 start"</span>);
+    <span class="hljs-built_in">Promise</span>.resolve(async2()).then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> &#123;	<span class="hljs-comment">//	async2也是一个返回promise的函数</span>
+      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"async1 end"</span>);
+    &#125;);
+    resolve()
+  &#125;);
+&#125;;</code></pre></div>
+
+<p>可以看到 <code>async/await</code> 确实减少了很多代码量.</p>
+<div class="note note-primary">
+            <div>    参考：    <p>        <a href="https://zhuanlan.zhihu.com/p/33058983" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/33058983</a>    </p>    <p>        <a href="https://juejin.im/post/5b73d7a6518825610072b42b#heading-9" target="_blank" rel="noopener">https://juejin.im/post/5b73d7a6518825610072b42b#heading-9</a>    </p>    <p>        <a href="https://developer.mozilla.org/zh-CN/docs/learn/JavaScript/%E5%BC%82%E6%AD%A5/Async_await" target="_blank" rel="noopener">https://developer.mozilla.org/zh-CN/docs/learn/JavaScript/%E5%BC%82%E6%AD%A5/Async_await</a>    </p></div>    
+          </div>
+
+
+
+
+
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/JavaScript/">JavaScript</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/JavaScript/">JavaScript</a>
+                    
+                      <a class="hover-with-bg" href="/tags/%E5%BC%82%E6%AD%A5/">异步</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/05/09/dom-render/">
+                        <span class="hidden-mobile">DOM Render</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+  
+<script src="/js/moveDom.js"></script>
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "JavaScript中的异步&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

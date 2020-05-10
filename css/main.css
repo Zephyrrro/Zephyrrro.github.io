@@ -1,7 +1,7 @@
 html,
 body {
   font-size: 16px;
-  font-family: 'PingFang SC', sans-serif;
+  font-family: 'PingFang SC Regular', sans-serif;
 }
 html,
 body,
@@ -552,7 +552,7 @@ a.beian-police img {
 .markdown-body {
   font-size: 1rem;
   margin-bottom: 2rem;
-  font-family: 'PingFang SC', sans-serif;
+  font-family: 'PingFang SC Regular', sans-serif;
   color: #2c3e50;
 }
 .markdown-body h1,
@@ -586,7 +586,7 @@ a.beian-police img {
   overflow: visible;
 }
 .markdown-body pre code {
-  font-size: 85%;
+  font-size: 100%;
   display: block;
   overflow-x: auto;
   padding: 0.5rem 0;
