@@ -56,8 +56,8 @@ color:  # 主题颜色配置，不一定能每一处都生效，可能会被局�
 
 font:  # 主题字体配置
   font_size: 16px                                 # 全局字号
-  font_family: "'PingFang SC', sans-serif"         # 全局字体
-  code_font_size: 85%                             # 代码的字号
+  font_family: "'PingFang SC Regular', sans-serif"         # 全局字体
+  code_font_size: 100%                             # 代码的字号
 
 custom_js: ["/js/moveDom.js"]   # 指定自定义 js 文件路径，路径是相对 source 目录，如 /js/custom.js，支持列表
 custom_css:   # 指定自定义 css 文件路径，路径是相对 source 目录，如 /css/custom.css，支持列表
@@ -155,7 +155,7 @@ index:
   post_default_img: '' # 默认的文章封面图，当没有指定 index_img 时会使用该图片，若都为空则不显示任何图片
   slogan:  # 首页副标题的独立设置
     enable: true  # 为 false 则不显示任何内容
-    text:  学习历程的日常记录 # 为空则按 hexo config.subtitle 显示
+    text:  Zephyrrro - Blog # 为空则按 hexo config.subtitle 显示
   auto_excerpt:
     enable: true
   post_url_target: _self  # available: _blank | _self

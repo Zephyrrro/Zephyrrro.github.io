@@ -3,6 +3,7 @@ title: DOM Render
 date: 2020-05-09 20:30:01
 index_img: /img/dom-render/render-tree-construction.png
 tags: [DOM, brower]
+excerpt: 浏览器的渲染过程
 ---
 
 {% note  secondary %}
@@ -82,6 +83,13 @@ tags: [DOM, brower]
 
 {% endnote %}
 
+------
+
 ## 实例
 
-`display: none`, `visible: hidden`, `opacity: 0`的优劣、区别
+👉[`display: none, visible: hidden, opacity: 0的优劣、区别`](https://muyiy.cn/question/css/57.html)
+
+<p class="note note-primary">参考： <a href="https://juejin.im/entry/59e1d31f51882578c3411c77">https://juejin.im/entry/59e1d31f51882578c3411c77</a> </p>
+
+
+
